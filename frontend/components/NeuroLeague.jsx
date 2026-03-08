@@ -558,7 +558,7 @@ function OnboardingScreen({ onComplete }) {
           <div style={{ flex:1, background:C.border, borderRadius:99, height:4 }}>
             <div style={{ height:"100%", width:`${((qIndex)/questions.length)*100}%`, background:skill.color, borderRadius:99, transition:"width 0.4s ease" }}/>
           </div>
-          <span style={{ fontSize:12, color:C.muted, flexShrink:0 }}>{qIndex+1} / {questions.length}</span>
+          <span style={{ fontSize:12, color:C.muted, flexShrink:0 }}>{qIndex+1}{" / "}{questions.length}</span>
         </div>
 
         {/* Card */}
