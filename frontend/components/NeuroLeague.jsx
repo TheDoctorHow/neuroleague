@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
-
+import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const C = {
@@ -27,19 +26,11 @@ const C = {
 
 const SKILLS = [
   { id:"music",  name:"Music",   emoji:"🎵", tagline:"Weave beats, synthesis & sonic spells",   color:"#C084FC" },
-  { id:"crypto", name:"Cryptocurrency",    emoji:"💎", tagline:"Master DeFi, web3 & the arcane ledger",   color:"#3DFFA0" },
+  { id:"crypto", name:"Crypto",  emoji:"💎", tagline:"Master DeFi, web3 & the arcane ledger",   color:"#3DFFA0" },
   { id:"coding", name:"Coding",  emoji:"💻", tagline:"Forge algorithms, systems & dark APIs",  color:"#38D9FF" },
 ];
 
 const LEVEL_LABELS = ["", "Initiate", "Apprentice", "Adept", "Invoker", "Archmage"];
-
-function scoresToLevel(yesCount) {
-  if (yesCount <= 1) return 1;
-  if (yesCount === 2) return 2;
-  if (yesCount === 3) return 3;
-  if (yesCount === 4) return 4;
-  return 5;
-}
 
 // ─── GLOBAL STYLES ────────────────────────────────────────────────────────────
 const globalStyles = `
@@ -243,62 +234,18 @@ function UserHeader({ user, nav, setScreen }) {
   );
 }
 
-
-// --- API CALLER ---
+// ─── API CALLER ────────────────────────────────────────────────────────────────
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-async function apiFetch(endpoint, method="POST", data=null) {
-  const options = {
-    method,
-    headers: { "Content-Type": "application/json" }
-  };
+async function apiFetch(endpoint, method = "GET", data = null) {
+  const options = { method, headers: { "Content-Type": "application/json" } };
   if (data) options.body = JSON.stringify(data);
   const res = await fetch(`${API_URL}${endpoint}`, options);
-  if (!res.ok) throw new Error("API Error");
+  if (!res.ok) throw new Error(`API Error ${res.status}`);
   return await res.json();
 }
 
-
-// ─── BRAIN AVATAR COMPONENT ──────────────────────────────────────────────────
-function BrainAvatar({ trackColor, size=120, user }) {
-  const colors = { music:"#A855F7", crypto:"#22C55E", coding:"#06B6D4" };
-  const baseColor = colors[trackColor] || trackColor || C.purple;
-  const isLegendaryEffect = user?.avatar?.equipped_effect;
-  const isRareAura = user?.avatar?.equipped_aura;
-  
-  return (
-    <div className={isLegendaryEffect ? "glow-anim" : ""} style={{ position:"relative", width:size, height:size, display:"flex", alignItems:"center", justifyContent:"center" }}>
-      {/* 1. Aura layer */}
-      {isRareAura && <div style={{ position:"absolute", inset:-size*0.2, borderRadius:"50%", background:`radial-gradient(circle, ${C.gold}44 0%, transparent 60%)`, animation:"orbPulse 3s infinite" }} />}
-      
-      {/* 2. Base brain layer */}
-      <div style={{ width:size*0.8, height:size*0.7, borderRadius:"45% 45% 40% 40%", background:`linear-gradient(135deg, ${baseColor} 0%, ${C.bg} 100%)`, position:"relative", overflow:"hidden", border:`2px solid ${baseColor}88`, boxShadow:`inset 0 -${size*0.1}px 0 rgba(0,0,0,0.3)` }}>
-         {/* Brain folds (css shapes) */}
-         <div style={{ position:"absolute", top:"20%", left:"10%", width:"80%", height:"2px", background:"rgba(0,0,0,0.3)", borderRadius:"50%", transform:"rotate(5deg)" }} />
-         <div style={{ position:"absolute", top:"50%", left:"15%", width:"70%", height:"2px", background:"rgba(0,0,0,0.3)", borderRadius:"50%", transform:"rotate(-5deg)" }} />
-      </div>
-      
-      {/* 3. Face layer */}
-      <div style={{ position:"absolute", top:"40%", display:"flex", gap:size*0.1 }}>
-         <div style={{ width:size*0.1, height:size*0.15, background:"#000", borderRadius:"50%" }} />
-         <div style={{ width:size*0.1, height:size*0.15, background:"#000", borderRadius:"50%" }} />
-      </div>
-      
-      {/* 4. Hat layer */}
-      {user?.avatar?.equipped_hat && (
-         <div style={{ position:"absolute", top:-(size*0.1), fontSize:size*0.4 }}>🎩</div>
-      )}
-      
-      {/* 5. Accessory layer */}
-      {user?.avatar?.equipped_accessory && (
-         <div style={{ position:"absolute", top:size*0.3, right:0, fontSize:size*0.3 }}>✨</div>
-      )}
-    </div>
-  );
-}
-
 // ─── ONBOARDING DATA ──────────────────────────────────────────────────────────
-
 // Per-skill yes/no questions. Answers accumulate a score → mapped to level 1-5.
 // If user ends up level 4-5, we unlock an optional advanced context textarea.
 const ONBOARD_QUESTIONS = {
@@ -405,6 +352,20 @@ function SwipeCard({ question, skillColor, onYes, onNo, cardIndex, totalCards })
   );
 }
 
+// SKILL_QUESTIONS is an alias for ONBOARD_QUESTIONS (same data, unified format)
+const SKILL_QUESTIONS = ONBOARD_QUESTIONS;
+
+const ADVANCED_PROMPTS = {
+  music:  "What's your current setup or workflow? Any specific areas you want to push further?",
+  crypto: "What's your current strategy or focus area? DeFi, trading, building?",
+  coding: "What stack do you work in? Any specific skills you're targeting?",
+};
+
+// Score → level mapping: 0 yes = 1, 1 yes = 2, 2 yes = 3, 3 yes = 4, 4 yes = 5
+function scoresToLevel(yesCount) {
+  return Math.min(yesCount + 1, 5);
+}
+
 // ─── SCREEN: ONBOARDING ───────────────────────────────────────────────────────
 function OnboardingScreen({ onComplete }) {
   const [phase, setPhase] = useState("splash");    // splash | skill | swipe | advanced | ready
@@ -494,7 +455,7 @@ function OnboardingScreen({ onComplete }) {
         <div key={i} style={{ position:"absolute", left:`${15+i*18}%`, top:`${20+i*12}%`, fontSize:i%2===0?18:12, color:C.purple, opacity:0.15, animation:`runeFloat ${5+i}s ${i*0.8}s ease-in-out infinite`, pointerEvents:"none" }}>{r}</div>
       ))}
       <div className="fade-up" style={{ textAlign:"center", maxWidth:400, position:"relative", zIndex:1 }}>
-        <div style={{ fontFamily:"'Fredoka One'", fontSize:72, color:C.purple, lineHeight:1, animation:"float 3s ease-in-out infinite", marginBottom:12 }}>🧠</div>
+        <div style={{ fontFamily:"'Fredoka One'", fontSize:72, color:C.purple, lineHeight:1, animation:"float 3s ease-in-out infinite", marginBottom:12 }}>⚡</div>
         <h1 className="arcane-title" style={{ fontFamily:"'Cinzel', serif", fontSize:40, color:C.text, marginBottom:8, letterSpacing:"0.06em" }}>NeuroLeague</h1>
         <p style={{ color:C.muted, fontSize:16, lineHeight:1.6, marginBottom:32 }}>
           Level up your skills.<br/>Beat your rivals.<br/>Become a Sage.
@@ -560,11 +521,11 @@ function OnboardingScreen({ onComplete }) {
           }}>
             <div style={{ fontSize:52, marginBottom:20 }}>{skill.emoji}</div>
             <p style={{ fontFamily:"'Fredoka One'", fontSize:22, color:C.text, lineHeight:1.4, marginBottom:12 }}>
-              {q.q}
+              {q.text}
             </p>
             {/* Hint — shown subtly */}
             <p style={{ fontSize:13, color:C.dim, marginBottom:32, minHeight:18 }}>
-              {swipeDir === "yes" ? q.yes : swipeDir === "no" ? q.no : "The Oracle awaits your answer"}
+              The Oracle awaits your answer
             </p>
 
             {/* YES / NO buttons */}
@@ -788,31 +749,39 @@ function MissionScreen({ user, setUser, setScreen, setLastResult }) {
 
   async function handleSubmit() {
     setSubmitting(true);
-    const score = mission.questions.reduce((acc, q, i) => acc + (answers[i] === q.correct_index ? 1 : 0), 0);
-    const backendResult = await apiFetch("/submit-quiz", "POST", {
-        user_id: user.id, mission_id: mission.mission_id || 1, score, questions_json: JSON.stringify(mission.questions)
-    });
-    const xpGained = backendResult.xp_gained;
-    const shareId = backendResult.share_id;
-    const result = {
-      shareId,
-      creator: { username: user.username, score, total: 3, xpGained },
-      challenger: { username: "VoidWraith_XIII", score: Math.floor(Math.random() * 4), total: 3, xpGained: Math.floor(Math.random() * 150) },
-      xpBefore: user.xp,
-      xpAfter: user.xp + xpGained,
-      questions: mission.questions,
-      userAnswers: answers,
-      backendDetails: backendResult
-    };
-    setUser(u => ({ ...u, xp: u.xp + xpGained, 
-        bronze_keys: (u.bronze_keys||0), 
-        silver_keys: (u.silver_keys||0) + (backendResult.keys_earned||0), 
-        level: backendResult.leveled_up ? u.level + 1 : u.level 
-    }));
-    setLastResult(result);
-    await new Promise(r => setTimeout(r, 400));
-    setSubmitting(false);
-    setScreen("results");
+    try {
+      const answersArray = mission.questions.map((_, i) => answers[i] ?? 0);
+      const backendResult = await apiFetch("/submit-quiz", "POST", {
+        user_id: user.id,
+        mission_id: mission.mission_id || 1,
+        answers: answersArray,
+      });
+      const score = backendResult.score;
+      const xpGained = backendResult.xp_gained;
+      const result = {
+        shareId: backendResult.share_id,
+        creator: { username: user.username, score, total: mission.questions.length, xpGained },
+        challenger: { username: "VoidWraith_XIII", score: Math.floor(Math.random() * 4), total: mission.questions.length, xpGained: Math.floor(Math.random() * 150) },
+        xpBefore: user.xp,
+        xpAfter: user.xp + xpGained,
+        questions: mission.questions,
+        userAnswers: answers,
+      };
+      setUser(u => ({
+        ...u,
+        xp: u.xp + xpGained,
+        level: backendResult.leveled_up ? u.level + 1 : u.level,
+        bronze_keys: (u.bronze_keys || 0) + 1,
+        silver_keys: (u.silver_keys || 0) + (score === mission.questions.length ? 1 : 0),
+      }));
+      setLastResult(result);
+      await new Promise(r => setTimeout(r, 400));
+      setScreen("results");
+    } catch(e) {
+      setError("Failed to submit. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const allAnswered = mission && Object.keys(answers).length === mission.questions.length;
@@ -991,9 +960,9 @@ function ResultsScreen({ user, lastResult, setScreen }) {
 
 // ─── SCREEN: BUDDY ────────────────────────────────────────────────────────────
 const FAKE_BUDDIES = [
-  { id: 101, username: "beatmaker_kai", skill: "music", skillName: "Sound Alchemy", level: 3, streak: 7 },
-  { id: 102, username: "cryptowhale_99", skill: "crypto", skillName: "Rune Markets", level: 2, streak: 12 },
-  { id: 103, username: "code_samurai", skill: "coding", skillName: "Spell Crafting", level: 4, streak: 5 },
+  { id: 101, username: "beatmaker_kai", skill: "music", skillName: "Music", level: 3, streak: 7 },
+  { id: 102, username: "cryptowhale_99", skill: "crypto", skillName: "Crypto", level: 2, streak: 12 },
+  { id: 103, username: "code_samurai", skill: "coding", skillName: "Coding", level: 4, streak: 5 },
 ];
 
 function BuddyScreen({ user, setUser, setLastResult, setScreen }) {
@@ -1508,223 +1477,315 @@ function MeetupScreen({ user, setScreen }) {
   );
 }
 
+// ─── BRAIN AVATAR COMPONENT ──────────────────────────────────────────────────
+function BrainAvatar({ trackColor, size=120, user }) {
+  const colors = { music:"#A855F7", crypto:"#22C55E", coding:"#06B6D4" };
+  const baseColor = colors[trackColor] || trackColor || C.purple;
+  const isLegendaryEffect = user?.avatar?.equipped_effect;
+  const isRareAura = user?.avatar?.equipped_aura;
+  return (
+    <div className={isLegendaryEffect ? "glow-anim" : ""} style={{ position:"relative", width:size, height:size, display:"flex", alignItems:"center", justifyContent:"center" }}>
+      {isRareAura && <div style={{ position:"absolute", inset:-size*0.2, borderRadius:"50%", background:`radial-gradient(circle, ${C.gold}44 0%, transparent 60%)`, animation:"orbPulse 3s infinite" }} />}
+      <div style={{ width:size*0.8, height:size*0.7, borderRadius:"45% 45% 40% 40%", background:`linear-gradient(135deg, ${baseColor} 0%, ${C.bg} 100%)`, position:"relative", overflow:"hidden", border:`2px solid ${baseColor}88`, boxShadow:`inset 0 -${size*0.1}px 0 rgba(0,0,0,0.3)` }}>
+        <div style={{ position:"absolute", top:"20%", left:"10%", width:"80%", height:"2px", background:"rgba(0,0,0,0.3)", borderRadius:"50%", transform:"rotate(5deg)" }} />
+        <div style={{ position:"absolute", top:"50%", left:"15%", width:"70%", height:"2px", background:"rgba(0,0,0,0.3)", borderRadius:"50%", transform:"rotate(-5deg)" }} />
+      </div>
+      <div style={{ position:"absolute", top:"40%", display:"flex", gap:size*0.1 }}>
+        <div style={{ width:size*0.1, height:size*0.15, background:"#000", borderRadius:"50%" }} />
+        <div style={{ width:size*0.1, height:size*0.15, background:"#000", borderRadius:"50%" }} />
+      </div>
+      {user?.avatar?.equipped_hat && <div style={{ position:"absolute", top:-(size*0.1), fontSize:size*0.4 }}>🎩</div>}
+      {user?.avatar?.equipped_accessory && <div style={{ position:"absolute", top:size*0.3, right:0, fontSize:size*0.3 }}>✨</div>}
+    </div>
+  );
+}
 
-// ─── NEW SCREENS ──────────────────────────────────────────────────────────────
-
+// ─── SCREEN: INVENTORY ────────────────────────────────────────────────────────
 function InventoryScreen({ user, setScreen }) {
-    const [inventory, setInventory] = useState([]);
-    
-    useEffect(() => {
-        apiFetch(`/inventory/${user.id}`, "GET").then(data => setInventory(data));
-    }, [user.id]);
-    
-    async function openCrate(tier) {
-        try {
-            const result = await apiFetch("/open-crate", "POST", { user_id: user.id, tier });
-            alert(`You unboxed a ${result.rarity} ${result.item.name}!`);
-            const inv = await apiFetch(`/inventory/${user.id}`, "GET");
-            setInventory(inv);
-        } catch(e) { alert("Missing keys!"); }
-    }
-    
-    async function equip(itemId) {
-        await apiFetch("/equip-item", "POST", { user_id: user.id, item_id: itemId });
-        const inv = await apiFetch(`/inventory/${user.id}`, "GET");
-        setInventory(inv);
-    }
-    
-    return (
-        <div style={{minHeight:"100vh",background:C.bg}}>
-            <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"Home"}]} />
-            <div style={{maxWidth:600, margin:"0 auto", padding:20}}>
-                <h1 style={{color:C.text, fontFamily:"'Fredoka One'", fontSize:28, marginBottom:20}}>🎒 Inventory & Loot</h1>
-                
-                <div style={{display:"flex", gap:10, marginBottom:30}}>
-                   <button onClick={()=>openCrate("bronze")} style={{flex:1, padding:10, background:"#E8833A22", border:`1px solid #E8833A`, color:"#E8833A", borderRadius:12}}>Open Bronze (🗝️{user.bronze_keys})</button>
-                   <button onClick={()=>openCrate("silver")} style={{flex:1, padding:10, background:"#C8B8FF22", border:`1px solid #C8B8FF`, color:"#C8B8FF", borderRadius:12}}>Open Silver (🔑{user.silver_keys})</button>
-                   <button onClick={()=>openCrate("gold")} style={{flex:1, padding:10, background:"#FFB83022", border:`1px solid #FFB830`, color:"#FFB830", borderRadius:12}}>Open Gold (✨{user.gold_keys})</button>
-                </div>
-                
-                <h2 style={{color:C.text, fontSize:20, marginBottom:10}}>Your Items</h2>
-                <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12}}>
-                   {inventory.map(i => (
-                       <div key={i.item_id} onClick={()=>equip(i.item_id)} style={{background:C.card, border:`2px solid ${i.equipped?C.green:C.border}`, padding:16, borderRadius:12, cursor:"pointer"}}>
-                           <div style={{color:C.text, fontWeight:700}}>{i.item_name}</div>
-                           <div style={{color:C.muted, fontSize:12, textTransform:"capitalize"}}>{i.item_rarity} {i.item_type}</div>
-                           {i.equipped && <span style={{color:C.green, fontSize:11, fontWeight:700}}>EQUIPPED</span>}
-                       </div>
-                   ))}
-                </div>
-            </div>
+  const [inventory, setInventory] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    apiFetch(`/inventory/${user.id}`, "GET")
+      .then(data => setInventory(data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [user.id]);
+
+  async function openCrate(tier) {
+    try {
+      const result = await apiFetch("/open-crate", "POST", { user_id: user.id, tier });
+      alert(`You unboxed a ${result.rarity} ${result.item?.name || "item"}!`);
+      apiFetch(`/inventory/${user.id}`, "GET").then(setInventory);
+    } catch(e) { alert("Not enough keys!"); }
+  }
+
+  async function equip(itemId) {
+    try {
+      await apiFetch("/equip-item", "POST", { user_id: user.id, item_id: itemId });
+      apiFetch(`/inventory/${user.id}`, "GET").then(setInventory);
+    } catch(e) {}
+  }
+
+  return (
+    <div style={{ minHeight:"100vh", background:C.bg }}>
+      <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"← Home"},{id:"mission",label:"Quests"}]} />
+      <div style={{ maxWidth:600, margin:"0 auto", padding:20 }}>
+        <h1 className="fade-up" style={{ color:C.text, fontFamily:"'Fredoka One'", fontSize:28, marginBottom:20 }}>🎒 Vault of Relics</h1>
+        <div style={{ display:"flex", gap:10, marginBottom:28 }}>
+          <button onClick={()=>openCrate("bronze")} style={{ flex:1, padding:12, background:"#E8833A22", border:`1px solid #E8833A`, color:"#E8833A", borderRadius:12, cursor:"pointer", fontFamily:"'Fredoka One'", fontSize:14 }}>
+            🗝️ Bronze ({user.bronze_keys||0})
+          </button>
+          <button onClick={()=>openCrate("silver")} style={{ flex:1, padding:12, background:"#C8B8FF22", border:`1px solid #C8B8FF`, color:"#C8B8FF", borderRadius:12, cursor:"pointer", fontFamily:"'Fredoka One'", fontSize:14 }}>
+            🔑 Silver ({user.silver_keys||0})
+          </button>
+          <button onClick={()=>openCrate("gold")} style={{ flex:1, padding:12, background:"#FFB83022", border:`1px solid #FFB830`, color:"#FFB830", borderRadius:12, cursor:"pointer", fontFamily:"'Fredoka One'", fontSize:14 }}>
+            ✨ Gold ({user.gold_keys||0})
+          </button>
         </div>
-    );
+        {loading ? <Spinner /> : (
+          inventory.length === 0
+            ? <div style={{ textAlign:"center", padding:40, color:C.muted }}>Your vault is empty. Complete quests to earn keys!</div>
+            : <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+                {inventory.map(item => (
+                  <div key={item.item_id} onClick={() => equip(item.item_id)}
+                    style={{ background:C.card, border:`2px solid ${item.equipped ? C.green : C.border}`, padding:16, borderRadius:12, cursor:"pointer", transition:"all 0.2s" }}
+                    onMouseEnter={e=>e.currentTarget.style.borderColor=item.equipped?C.green:C.purple}
+                    onMouseLeave={e=>e.currentTarget.style.borderColor=item.equipped?C.green:C.border}>
+                    <div style={{ color:C.text, fontWeight:700, marginBottom:4 }}>{item.item_name}</div>
+                    <div style={{ color:C.muted, fontSize:12, textTransform:"capitalize" }}>{item.item_rarity} · {item.item_type}</div>
+                    {item.equipped && <div style={{ color:C.green, fontSize:11, fontWeight:700, marginTop:6 }}>✓ EQUIPPED</div>}
+                  </div>
+                ))}
+              </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-function TradeScreen({ user, setScreen }) {
-    const [trades, setTrades] = useState([]);
-    useEffect(() => { apiFetch(`/trade/incoming/${user.id}`, "GET").then(setTrades); }, [user.id]);
-    
-    async function respond(tradeId, action) {
-        const res = await apiFetch("/trade/respond", "POST", { trade_id: tradeId, action });
-        if(res.requires_irl && action === "accepted") {
-            alert("This trade requires an IRL Cross-Pollination Meetup to complete!");
-        }
-        apiFetch(`/trade/incoming/${user.id}`, "GET").then(setTrades);
-    }
-    
-    return (
-        <div style={{minHeight:"100vh",background:C.bg}}>
-            <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"Home"}]} />
-            <div style={{maxWidth:600, margin:"0 auto", padding:20}}>
-                <h1 style={{color:C.text, fontFamily:"'Fredoka One'", fontSize:28, marginBottom:20}}>🤝 Trade Offers</h1>
-                {trades.length===0 ? <p style={{color:C.muted}}>No incoming offers.</p> : 
-                 trades.map(t => (
-                     <div key={t.id} style={{background:C.card, padding:20, borderRadius:12, marginBottom:10, border:`1px solid ${C.border}`}}>
-                        {t.requires_irl && <div style={{background:C.red+"22", color:C.red, padding:6, borderRadius:6, fontSize:12, fontWeight:700, marginBottom:10}}>CROSS-POLLINATION MEETUP REQUIRED</div>}
-                        <p style={{color:C.text}}>Offer: {t.sender_item_id} for {t.receiver_item_id}</p>
-                        <div style={{display:"flex", gap:10, marginTop:10}}>
-                            <button onClick={()=>respond(t.id, "accepted")} style={{padding:"8px 16px", background:C.green, color:"#fff", border:"none", borderRadius:8}}>Accept</button>
-                            <button onClick={()=>respond(t.id, "declined")} style={{padding:"8px 16px", background:C.red, color:"#fff", border:"none", borderRadius:8}}>Decline</button>
-                        </div>
-                     </div>
-                 ))}
-            </div>
-        </div>
-    );
-}
-
+// ─── SCREEN: MESSAGES (Sage AI Trainer) ──────────────────────────────────────
 function MessagesScreen({ user, setScreen }) {
-    const [history, setHistory] = useState([]);
-    const [input, setInput] = useState("");
-    
-    useEffect(() => { apiFetch(`/ai-trainer/history/${user.id}`, "GET").then(d => setHistory(d.reverse())); }, [user.id]);
-    
-    async function sendMsg() {
-        if(!input.trim()) return;
-        const temp = [...history, {content: input, is_ai: false}];
-        setHistory(temp);
-        setInput("");
-        const res = await apiFetch("/ai-trainer/message", "POST", { user_id: user.id, message: input });
-        setHistory([...temp, {content: res.reply, is_ai: true}]);
-    }
-    
-    return (
-        <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column"}}>
-            <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"Home"}]} />
-            <div style={{flex:1, overflowY:"auto", padding:20, display:"flex", flexDirection:"column", gap:12}}>
-                {history.map((m,i) => (
-                    <div key={i} style={{alignSelf: m.is_ai ? "flex-start" : "flex-end", background: m.is_ai ? C.surface : C.purple, color: m.is_ai ? C.text : "#fff", padding:"10px 14px", borderRadius:12, maxWidth:"80%"}}>
-                        {m.content}
-                    </div>
-                ))}
-            </div>
-            <div style={{padding:16, borderTop:`1px solid ${C.border}`, display:"flex", gap:10}}>
-                <input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendMsg()} style={{flex:1, background:C.surface, border:`1px solid ${C.border}`, color:C.text, borderRadius:12, padding:12}} placeholder="Ask Sage..." />
-                <button onClick={sendMsg} style={{background:C.purple, color:"#fff", border:"none", borderRadius:12, padding:"0 20px", fontWeight:700}}>Send</button>
-            </div>
+  const [history, setHistory] = useState([
+    { content: `Greetings, ${user.username}. I am Sage, your arcane trainer. How may I guide your ${user.skillName || user.skill} journey today?`, is_ai: true }
+  ]);
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior:"smooth" });
+  }, [history]);
+
+  async function sendMsg() {
+    const trimmed = input.trim();
+    if (!trimmed || sending) return;
+    setSending(true);
+    const updated = [...history, { content: trimmed, is_ai: false }];
+    setHistory(updated);
+    setInput("");
+    try {
+      const res = await apiFetch("/ai-trainer/message", "POST", {
+        user_id: user.id,
+        message: trimmed,
+        conversation_history: history.map(m => ({ role: m.is_ai ? "assistant" : "user", content: m.content }))
+      });
+      setHistory(prev => [...prev, { content: res.reply, is_ai: true }]);
+    } catch(e) {
+      setHistory(prev => [...prev, { content: "The Oracle is unreachable. Try again shortly.", is_ai: true }]);
+    } finally { setSending(false); }
+  }
+
+  return (
+    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column" }}>
+      <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"← Home"},{id:"mission",label:"Quests"}]} />
+      <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"10px 20px", display:"flex", alignItems:"center", gap:12 }}>
+        <div style={{ width:36, height:36, borderRadius:"50%", background:`linear-gradient(135deg,${C.gold}88,${C.gold})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>🧙</div>
+        <div>
+          <div style={{ fontFamily:"'Fredoka One'", fontSize:16, color:C.gold }}>Sage</div>
+          <div style={{ fontSize:11, color:C.muted }}>Your AI Trainer · Always watching</div>
         </div>
-    );
+      </div>
+      <div style={{ flex:1, overflowY:"auto", padding:20, display:"flex", flexDirection:"column", gap:12 }}>
+        {history.map((m, i) => (
+          <div key={i} style={{
+            alignSelf: m.is_ai ? "flex-start" : "flex-end",
+            background: m.is_ai ? C.card : `linear-gradient(135deg,${C.purpleDark},${C.purple})`,
+            color: C.text, padding:"12px 16px", borderRadius: m.is_ai ? "4px 16px 16px 16px" : "16px 4px 16px 16px",
+            maxWidth:"80%", fontSize:14, lineHeight:1.5,
+            border: m.is_ai ? `1px solid ${C.border}` : "none",
+          }}>
+            {m.content}
+          </div>
+        ))}
+        {sending && (
+          <div style={{ alignSelf:"flex-start", background:C.card, border:`1px solid ${C.border}`, padding:"12px 16px", borderRadius:"4px 16px 16px 16px", color:C.muted, fontSize:14 }}>
+            The Oracle communes...
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+      <div style={{ padding:16, borderTop:`1px solid ${C.border}`, display:"flex", gap:10, background:C.surface }}>
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && sendMsg()}
+          placeholder="Ask Sage anything..."
+          style={{ flex:1, background:C.card, border:`1px solid ${C.border}`, color:C.text, borderRadius:12, padding:"12px 16px", fontSize:14, outline:"none", fontFamily:"'DM Sans',sans-serif" }}
+        />
+        <button onClick={sendMsg} disabled={sending || !input.trim()} style={{ background: sending ? C.dim : `linear-gradient(135deg,${C.purpleDark},${C.purple})`, color:"#fff", border:"none", borderRadius:12, padding:"0 20px", fontFamily:"'Fredoka One'", fontSize:16, cursor: sending ? "not-allowed" : "pointer", transition:"all 0.2s" }}>
+          Send
+        </button>
+      </div>
+    </div>
+  );
 }
 
-function ClanScreen({ user, setScreen }) {
-    const [clans, setClans] = useState([]);
-    useEffect(() => { apiFetch(`/clans/${user.skill}`, "GET").then(setClans); }, [user.skill]);
-    return (
-        <div style={{minHeight:"100vh",background:C.bg}}>
-            <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"Home"}]} />
-            <div style={{maxWidth:600, margin:"0 auto", padding:20}}>
-                <h1 style={{color:C.text, fontFamily:"'Fredoka One'", fontSize:28, marginBottom:20}}>🛡️ Guilds</h1>
-                {clans.map(c => (
-                    <div key={c.id} style={{background:C.card, padding:20, borderRadius:12, border:`1px solid ${C.border}`}}>
-                        <h2 style={{color:C.text}}>{c.name}</h2>
-                        <p style={{color:C.muted}}>Members: {c.member_count}</p>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-}
-
-function ProfileScreen({ user, setScreen }) {
-    return (
-        <div style={{minHeight:"100vh",background:C.bg}}>
-            <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"Home"}]} />
-            <div style={{maxWidth:600, margin:"0 auto", padding:20, textAlign:"center"}}>
-                <BrainAvatar trackColor={user.skill} size={160} user={user} />
-                <h1 style={{color:C.text, fontSize:32, marginTop:20}}>{user.username}</h1>
-                <p style={{color:C.purple, fontWeight:700}}>Level {user.level} {user.skillName}</p>
-                <div style={{display:"flex", gap:10, justifyContent:"center", marginTop:20}}>
-                    <button onClick={()=>setScreen("inventory")} style={{background:C.surface, color:C.text, border:`1px solid ${C.border}`, padding:"10px 20px", borderRadius:10}}>Edit Avatar</button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
+// ─── SCREEN: CAMPAIGN ─────────────────────────────────────────────────────────
 function CampaignScreen({ user, setScreen }) {
-    const [room, setRoom] = useState("");
-    const [state, setState] = useState(null);
-    async function create() {
-        const res = await apiFetch("/campaign/create", "POST", { host_id: user.id, skill: user.skill, is_public: true });
-        setState(res); setRoom(res.room_code);
-    }
-    return (
-        <div style={{minHeight:"100vh",background:C.bg}}>
-            <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"Home"}]} />
-            <div style={{maxWidth:600, margin:"0 auto", padding:20, textAlign:"center"}}>
-                <h1 style={{color:C.text, fontFamily:"'Fredoka One'", fontSize:32, marginBottom:20}}>🐲 Dungeons</h1>
-                {!state ? (
-                    <div>
-                        <button onClick={create} style={{background:C.red, color:"#fff", border:"none", padding:"15px 30px", borderRadius:12, fontSize:18, fontWeight:700, width:"100%", marginBottom:20}}>Create Dungeon</button>
-                        <input value={room} onChange={e=>setRoom(e.target.value)} placeholder="Room Code" style={{background:C.surface, border:`1px solid ${C.border}`, padding:15, width:"100%", borderRadius:12, color:C.text, marginBottom:10}}/>
-                        <button style={{background:C.purple, color:"#fff", border:"none", padding:"15px", borderRadius:12, width:"100%"}}>Join Dungeon</button>
-                    </div>
-                ) : (
-                    <div>
-                        <h2 style={{color:C.text}}>Room: {room}</h2>
-                        <p style={{color:C.muted}}>Waiting for adventurers...</p>
-                    </div>
-                )}
+  const [room, setRoom] = useState("");
+  const [state, setState] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  async function create() {
+    setLoading(true);
+    try {
+      const res = await apiFetch("/campaign/create", "POST", { host_id: user.id, skill: user.skill, is_public: true });
+      setState(res);
+      setRoom(res.room_code);
+    } catch(e) { alert("Failed to create dungeon."); }
+    finally { setLoading(false); }
+  }
+
+  return (
+    <div style={{ minHeight:"100vh", background:C.bg }}>
+      <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"← Home"},{id:"mission",label:"Quests"}]} />
+      <div style={{ maxWidth:520, margin:"0 auto", padding:24, textAlign:"center" }}>
+        <div style={{ fontSize:64, marginBottom:16, animation:"float 2s ease-in-out infinite" }}>🐲</div>
+        <h1 style={{ color:C.text, fontFamily:"'Fredoka One'", fontSize:32, marginBottom:8 }}>Dungeon Raids</h1>
+        <p style={{ color:C.muted, fontSize:14, marginBottom:32 }}>Battle monsters with 2-4 players. Answer correctly to deal damage.</p>
+        {!state ? (
+          <div>
+            <button onClick={create} disabled={loading} style={{ background: loading ? C.dim : `linear-gradient(135deg,${C.red}CC,${C.red})`, color:"#fff", border:"none", padding:"16px", borderRadius:14, fontSize:18, fontFamily:"'Fredoka One'", width:"100%", marginBottom:16, cursor: loading ? "not-allowed" : "pointer", boxShadow:`0 8px 32px ${C.red}44` }}>
+              {loading ? "Summoning dungeon..." : "⚔️ Create Dungeon"}
+            </button>
+            <div style={{ display:"flex", gap:10 }}>
+              <input value={room} onChange={e=>setRoom(e.target.value)} placeholder="Enter room code..."
+                style={{ flex:1, background:C.card, border:`1px solid ${C.border}`, padding:14, borderRadius:12, color:C.text, fontSize:16, outline:"none" }}/>
+              <button style={{ background:`linear-gradient(135deg,${C.purpleDark},${C.purple})`, color:"#fff", border:"none", padding:"14px 20px", borderRadius:12, cursor:"pointer", fontFamily:"'Fredoka One'", fontSize:16 }}>
+                Join
+              </button>
             </div>
-        </div>
-    );
+          </div>
+        ) : (
+          <div style={{ background:C.card, border:`2px solid ${C.purple}`, borderRadius:20, padding:32 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:2, marginBottom:12 }}>Room Code</div>
+            <div style={{ fontFamily:"'Fredoka One'", fontSize:56, color:C.purple, letterSpacing:8, marginBottom:16 }}>{room}</div>
+            <p style={{ color:C.muted, fontSize:14 }}>Share this code with your party. Waiting for adventurers...</p>
+            <div style={{ display:"flex", justifyContent:"center", gap:8, marginTop:20 }}>
+              {[1,2,3,4].map(n => (
+                <div key={n} style={{ width:40, height:40, borderRadius:"50%", background: n===1 ? C.purple : C.border, display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 }}>
+                  {n===1 ? "👤" : "•"}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
+// ─── SCREEN: PROFILE ──────────────────────────────────────────────────────────
+function ProfileScreen({ user, setScreen }) {
+  const skill = SKILLS.find(s => s.id === user.skill);
+  return (
+    <div style={{ minHeight:"100vh", background:C.bg }}>
+      <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"← Home"},{id:"inventory",label:"🎒 Vault"}]} />
+      <div style={{ maxWidth:480, margin:"0 auto", padding:24, textAlign:"center" }}>
+        <div className="fade-up" style={{ marginBottom:20 }}>
+          <BrainAvatar trackColor={user.skill} size={140} user={user} />
+        </div>
+        <h1 className="fade-up-1" style={{ color:C.text, fontFamily:"'Fredoka One'", fontSize:32, marginBottom:4 }}>{user.username}</h1>
+        <div className="fade-up-2" style={{ display:"flex", justifyContent:"center", gap:8, marginBottom:24 }}>
+          <Badge text={`${skill?.name || user.skill}`} color={skill?.color || C.purple} />
+          <Badge text={`Level ${user.level} · ${LEVEL_LABELS[user.level] || "Archmage"}`} color={C.purple} />
+        </div>
+        <div className="fade-up-3" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12, marginBottom:24 }}>
+          {[["🔥","Streak",`${user.streak} days`],["⚡","XP",user.xp],["🗝️","Keys",`${user.bronze_keys||0}/${user.silver_keys||0}/${user.gold_keys||0}`]].map(([emoji,label,val])=>(
+            <div key={label} style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:14 }}>
+              <div style={{ fontSize:24, marginBottom:4 }}>{emoji}</div>
+              <div style={{ fontSize:11, color:C.muted, marginBottom:2 }}>{label}</div>
+              <div style={{ fontFamily:"'Fredoka One'", fontSize:18, color:C.text }}>{val}</div>
+            </div>
+          ))}
+        </div>
+        <div className="fade-up-4" style={{ display:"flex", gap:10 }}>
+          <button onClick={()=>setScreen("inventory")} style={{ flex:1, padding:"13px", borderRadius:12, border:`2px solid ${C.border}`, background:"transparent", color:C.text, cursor:"pointer", fontFamily:"'Fredoka One'", fontSize:15, transition:"all 0.2s" }}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor=C.purple;e.currentTarget.style.color=C.purple;}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.text;}}>
+            🎒 Vault
+          </button>
+          <button onClick={()=>setScreen("messages")} style={{ flex:1, padding:"13px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${C.purpleDark},${C.purple})`, color:"#fff", cursor:"pointer", fontFamily:"'Fredoka One'", fontSize:15 }}>
+            🧙 Ask Sage
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── SCREEN: MAP ──────────────────────────────────────────────────────────────
 function MapScreen({ user, setScreen }) {
-    const { isLoaded } = useJsApiLoader({ googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY });
-    const [enabled, setEnabled] = useState(user.location_enabled);
-    const [center, setCenter] = useState({ lat: 32.7767, lng: -96.7970 }); // Dallas TX default
-    
-    async function toggleLocation(val) {
-        setEnabled(val);
-        await apiFetch("/location/update", "POST", { user_id: user.id, location_enabled: val, latitude: center.lat, longitude: center.lng });
-    }
-    
-    return (
-        <div style={{minHeight:"100vh",background:C.bg,display:"flex",flexDirection:"column"}}>
-            <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"Home"}]} />
-            <div style={{padding:16, background:C.surface, display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-                <span style={{color:C.text, fontWeight:700}}>Location Sharing</span>
-                <input type="checkbox" checked={enabled} onChange={(e)=>toggleLocation(e.target.checked)} />
-            </div>
-            {enabled && isLoaded ? (
-                <div style={{flex:1}}>
-                    <GoogleMap mapContainerStyle={{width:'100%', height:'100%'}} center={center} zoom={13}>
-                        <Marker position={center} icon={{url:"http://maps.google.com/mapfiles/ms/icons/purple-dot.png"}} label="You" />
-                    </GoogleMap>
-                </div>
-            ) : (
-                <div style={{flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:C.muted}}>
-                    Enable location sharing to discover nearby venues & allies!
-                </div>
-            )}
-        </div>
-    );
-}
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
+  });
+  const [enabled, setEnabled] = useState(false);
+  const center = { lat: 32.7767, lng: -96.7970 };
 
+  async function toggleLocation(val) {
+    setEnabled(val);
+    if (val) {
+      try {
+        await apiFetch("/location/update", "POST", { user_id: user.id, location_enabled: val, latitude: center.lat, longitude: center.lng });
+      } catch(e) {}
+    }
+  }
+
+  return (
+    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column" }}>
+      <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"← Home"},{id:"meetup",label:"Meetups"}]} />
+      <div style={{ padding:"12px 20px", background:C.surface, borderBottom:`1px solid ${C.border}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        <div>
+          <div style={{ fontFamily:"'Fredoka One'", fontSize:16, color:C.text }}>📍 Location Sharing</div>
+          <div style={{ fontSize:12, color:C.muted }}>Neighborhood precision only — never exact</div>
+        </div>
+        <div onClick={() => toggleLocation(!enabled)} style={{ width:44, height:24, borderRadius:12, background: enabled ? C.purple : C.border, cursor:"pointer", position:"relative", transition:"all 0.3s" }}>
+          <div style={{ width:20, height:20, borderRadius:"50%", background:"#fff", position:"absolute", top:2, left: enabled ? 22 : 2, transition:"all 0.3s" }} />
+        </div>
+      </div>
+      {enabled && isLoaded ? (
+        <div style={{ flex:1, minHeight:400 }}>
+          <GoogleMap mapContainerStyle={{ width:"100%", height:"100%" }} center={center} zoom={13}
+            options={{ styles:[{elementType:"geometry",stylers:[{color:"#08060F"}]},{elementType:"labels.text.fill",stylers:[{color:"#9D6FFF"}]},{featureType:"road",elementType:"geometry",stylers:[{color:"#2D1F5E"}]},{featureType:"water",elementType:"geometry",stylers:[{color:"#100D1E"}]}] }}>
+            <Marker position={center} label={{ text:"You", color:"#fff", fontWeight:"bold" }} />
+          </GoogleMap>
+        </div>
+      ) : (
+        <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:40, textAlign:"center" }}>
+          <div style={{ fontSize:64, marginBottom:16 }}>🗺️</div>
+          <h2 style={{ fontFamily:"'Fredoka One'", fontSize:24, color:C.text, marginBottom:8 }}>Arcane Map</h2>
+          <p style={{ color:C.muted, fontSize:14, marginBottom:24 }}>Enable location sharing to discover nearby allies and venues in your neighborhood.</p>
+          <button onClick={()=>toggleLocation(true)} style={{ background:`linear-gradient(135deg,${C.purpleDark},${C.purple})`, color:"#fff", border:"none", padding:"14px 32px", borderRadius:12, fontFamily:"'Fredoka One'", fontSize:16, cursor:"pointer" }}>
+            Enable Location
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── ROOT APP ──────────────────────────────────────────────────────────────────
-
 export default function App() {
   const [screen, setScreen] = useState("home");
   const [user, setUser] = useState(null);
@@ -1732,12 +1793,17 @@ export default function App() {
 
   function handleOnboard(u) { setUser(u); setScreen("path"); }
 
-  if (screen==="home"||!user)  return <OnboardingScreen onComplete={handleOnboard}/>;
-  if (screen==="path")         return <LearningPathScreen user={user} setUser={setUser} setScreen={setScreen}/>;
-  if (screen==="mission")      return <MissionScreen user={user} setUser={setUser} setScreen={setScreen} setLastResult={setLastResult}/>;
-  if (screen==="results")      return <ResultsScreen user={user} lastResult={lastResult} setScreen={setScreen}/>;
-  if (screen==="buddy")        return <BuddyScreen user={user} setUser={setUser} setLastResult={setLastResult} setScreen={setScreen}/>;
-  if (screen==="leaderboard")  return <LeaderboardScreen user={user} setScreen={setScreen}/>;
-  if (screen==="meetup")       return <MeetupScreen user={user} setScreen={setScreen}/>;
+  if (screen === "home" || !user) return <OnboardingScreen onComplete={handleOnboard} />;
+  if (screen === "path")         return <LearningPathScreen user={user} setUser={setUser} setScreen={setScreen} />;
+  if (screen === "mission")      return <MissionScreen user={user} setUser={setUser} setScreen={setScreen} setLastResult={setLastResult} />;
+  if (screen === "results")      return <ResultsScreen user={user} lastResult={lastResult} setScreen={setScreen} />;
+  if (screen === "buddy")        return <BuddyScreen user={user} setUser={setUser} setLastResult={setLastResult} setScreen={setScreen} />;
+  if (screen === "leaderboard")  return <LeaderboardScreen user={user} setScreen={setScreen} />;
+  if (screen === "meetup")       return <MeetupScreen user={user} setScreen={setScreen} />;
+  if (screen === "inventory")    return <InventoryScreen user={user} setScreen={setScreen} />;
+  if (screen === "messages")     return <MessagesScreen user={user} setScreen={setScreen} />;
+  if (screen === "campaign")     return <CampaignScreen user={user} setScreen={setScreen} />;
+  if (screen === "profile")      return <ProfileScreen user={user} setScreen={setScreen} />;
+  if (screen === "map")          return <MapScreen user={user} setScreen={setScreen} />;
   return null;
 }
