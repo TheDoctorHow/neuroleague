@@ -436,40 +436,6 @@ function BrainAvatar({ trackColor, size=120, user }) {
   );
 }
 
-// ─── ONBOARDING DATA ──────────────────────────────────────────────────────────
-
-const SKILL_QUESTIONS = {
-  music: [
-    { q: "Have you ever made a beat or recorded audio before?",                    yes: "Nice! You've got some hands-on time.",   no: "No worries — we'll start from scratch." },
-    { q: "Do you know what a DAW is? (Digital Audio Workstation)",                 yes: "FL Studio, Ableton, GarageBand — you know the tools.", no: "That's exactly what we'll cover first." },
-    { q: "Can you read sheet music or understand basic music theory?",             yes: "Theory will accelerate your production game.", no: "We'll build your ear the fun way." },
-    { q: "Have you ever released or shared something you've created?",             yes: "A creator mindset — perfect for this path.", no: "Your first drop is going to feel amazing." },
-  ],
-  crypto: [
-    { q: "Have you ever bought or sold any crypto before?",                        yes: "You've felt the market. Let's sharpen that edge.", no: "Smart to learn before you dive in." },
-    { q: "Do you know what a blockchain is and how it works?",                     yes: "The rails under everything — solid foundation.", no: "We'll make it click, no jargon." },
-    { q: "Have you used a DeFi protocol or a non-custodial wallet?",               yes: "On-chain experience changes everything.", no: "DeFi is advanced — we'll build toward it." },
-    { q: "Do you track charts and understand concepts like support/resistance?",   yes: "Technical analysis will take your trading further.", no: "We'll get you reading charts like a pro." },
-  ],
-  coding: [
-    { q: "Have you ever written code in any language?",                            yes: "You know the loop — time to level it up.", no: "Everyone starts here. Welcome." },
-    { q: "Can you write a function and understand what it returns?",               yes: "Functions are the building blocks — you're ready.", no: "We'll break it down one concept at a time." },
-    { q: "Have you built or deployed a real project (app, website, script)?",      yes: "Shipped code is the best teacher.", no: "Your first project is going to be memorable." },
-    { q: "Do you understand data structures like arrays, hashmaps, or trees?",     yes: "DSA unlocks algorithmic thinking — nice.", no: "We'll cover these in a way that actually sticks." },
-  ],
-};
-
-const ADVANCED_PROMPTS = {
-  music:  "What's your current setup or workflow? Any specific areas you want to push further?",
-  crypto: "What's your current strategy or focus area? DeFi, trading, building?",
-  coding: "What stack do you work in? Any specific skills you're targeting?",
-};
-
-// Score → level mapping: 0 yes = 1, 1 yes = 2, 2 yes = 3, 3 yes = 4, 4 yes = 5
-function scoresToLevel(yesCount) {
-  return Math.min(yesCount + 1, 5);
-}
-
 // ─── SCREEN: ONBOARDING ───────────────────────────────────────────────────────
 function OnboardingScreen({ onComplete }) {
   const [phase, setPhase] = useState("splash");    // splash | skill | swipe | advanced | ready
