@@ -234,6 +234,42 @@ function UserHeader({ user, nav, setScreen }) {
   );
 }
 
+// ─── BOTTOM NAV ───────────────────────────────────────────────────────────────
+function BottomNav({ screen, setScreen }) {
+  const tabs = [
+    { id:"mission",     icon:"⚔️",  label:"Quests"   },
+    { id:"leaderboard", icon:"🏆",  label:"Ranks"    },
+    { id:"meetup",      icon:"🏰",  label:"Meetups"  },
+    { id:"messages",    icon:"🧙",  label:"Sage"     },
+    { id:"inventory",   icon:"🎒",  label:"Vault"    },
+    { id:"campaign",    icon:"🐲",  label:"Dungeon"  },
+    { id:"profile",     icon:"🧠",  label:"Profile"  },
+  ];
+  return (
+    <div style={{
+      position:"fixed", bottom:0, left:0, right:0, zIndex:20,
+      background:`linear-gradient(180deg, ${C.bg}EE, ${C.surface})`,
+      borderTop:`1px solid ${C.border}`,
+      display:"flex", justifyContent:"space-around", alignItems:"center",
+      padding:"8px 4px 12px",
+      backdropFilter:"blur(18px)",
+    }}>
+      {tabs.map(t => (
+        <button key={t.id} onClick={() => setScreen(t.id)} style={{
+          background:"none", border:"none", cursor:"pointer",
+          display:"flex", flexDirection:"column", alignItems:"center", gap:2,
+          padding:"4px 6px", borderRadius:10,
+          transition:"all 0.2s",
+          opacity: screen === t.id ? 1 : 0.5,
+        }}>
+          <span style={{ fontSize:18 }}>{t.icon}</span>
+          <span style={{ fontSize:9, color: screen === t.id ? C.purple : C.muted, fontWeight: screen === t.id ? 700 : 400 }}>{t.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // ─── API CALLER ────────────────────────────────────────────────────────────────
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -673,7 +709,7 @@ function OnboardingScreen({ onComplete }) {
 
 
 // ─── SCREEN: LEARNING PATH ────────────────────────────────────────────────────
-function LearningPathScreen({ user, setUser, setScreen }) {
+function LearningPathScreen({ user, setUser, setScreen, screen }) {
   const [path, setPath] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -694,8 +730,9 @@ function LearningPathScreen({ user, setUser, setScreen }) {
 
   return (
     <div style={{ minHeight:"100vh", background:C.bg }}>
-      <UserHeader user={user} setScreen={setScreen} nav={[{id:"mission",label:"Quests"},{id:"leaderboard",label:"🏆"},{id:"buddy",label:"Allies"}]} />
-      <div style={{ maxWidth:600, margin:"0 auto", padding:24 }}>
+      <UserHeader user={user} setScreen={setScreen} nav={[]} />
+      <BottomNav screen={screen} setScreen={setScreen} />
+      <div style={{ maxWidth:600, margin:"0 auto", padding:24, paddingBottom:90 }}>
         <div className="fade-up" style={{ marginBottom:28 }}>
           <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
             <span style={{ fontSize:28 }}>{skill?.emoji}</span>
@@ -740,7 +777,7 @@ function LearningPathScreen({ user, setUser, setScreen }) {
 }
 
 // ─── SCREEN: MISSION ──────────────────────────────────────────────────────────
-function MissionScreen({ user, setUser, setScreen, setLastResult }) {
+function MissionScreen({ user, setUser, setScreen, setLastResult, screen }) {
   const [mission, setMission] = useState(null);
   const [loading, setLoading] = useState(true);
   const [answers, setAnswers] = useState({});
@@ -801,8 +838,8 @@ function MissionScreen({ user, setUser, setScreen, setLastResult }) {
   return (
     <div style={{ minHeight:"100vh", background:C.bg }}>
       <UserHeader user={user} setScreen={setScreen} nav={[{id:"path",label:"Skill Tree"},{id:"leaderboard",label:"🏆"},{id:"buddy",label:"Allies"}]} />
-      <div style={{ maxWidth:600, margin:"0 auto", padding:24 }}>
-        <h1 className="fade-up" style={{ fontFamily:"'Fredoka One'", fontSize:30, marginBottom:20 }}>⚔️ Daily Quest</h1>
+      <BottomNav screen={screen} setScreen={setScreen} />
+      <div style={{ maxWidth:600, margin:"0 auto", padding:24, paddingBottom:90 }}>
         
         {loading && <Spinner />}
         {error && <div style={{ background:"#EF444422", border:"1px solid #EF4444", borderRadius:12, padding:16, color:C.red }}>{error}</div>}
@@ -860,7 +897,7 @@ function MissionScreen({ user, setUser, setScreen, setLastResult }) {
 }
 
 // ─── SCREEN: RESULTS ──────────────────────────────────────────────────────────
-function ResultsScreen({ user, lastResult, setScreen }) {
+function ResultsScreen({ user, lastResult, setScreen, screen }) {
   const [xpWidth, setXpWidth] = useState(0);
   const [copied, setCopied] = useState(false);
   const shareUrl = `https://neuroleague.app/challenge/${lastResult?.shareId || "demo123"}`;
@@ -888,9 +925,8 @@ function ResultsScreen({ user, lastResult, setScreen }) {
   return (
     <div style={{ minHeight:"100vh", background:C.bg }}>
       <UserHeader user={user} setScreen={setScreen} nav={[{id:"mission",label:"Quests"},{id:"leaderboard",label:"🏆"},{id:"buddy",label:"Allies"}]} />
-      <div style={{ maxWidth:600, margin:"0 auto", padding:24 }}>
-        
-        <div className="fade-up" style={{ textAlign:"center", marginBottom:28 }}>
+      <BottomNav screen={screen} setScreen={setScreen} />
+      <div style={{ maxWidth:600, margin:"0 auto", padding:24, paddingBottom:90 }}>
           <div style={{ fontFamily:"'Fredoka One'", fontSize:52, animation:"float 2s ease-in-out infinite" }}>🏆</div>
           <h1 style={{ fontFamily:"'Fredoka One'", fontSize:36, color:C.text }}>Duel Results!</h1>
           <p style={{ color:C.muted, fontSize:14 }}>{creator.score === 3 ? "🔥 Flawless victory! The Oracle is pleased." : creator.score === 2 ? "⚔️ A worthy showing, adventurer." : "📜 Study the ancient texts. You will rise."}</p>
@@ -977,7 +1013,7 @@ const FAKE_BUDDIES = [
   { id: 103, username: "code_samurai", skill: "coding", skillName: "Coding", level: 4, streak: 5 },
 ];
 
-function BuddyScreen({ user, setUser, setLastResult, setScreen }) {
+function BuddyScreen({ user, setUser, setLastResult, setScreen, screen }) {
   const [challenging, setChallenging] = useState(null);
   const skillColor = { music:"#A855F7", crypto:"#22C55E", coding:"#06B6D4" };
 
@@ -1000,7 +1036,8 @@ function BuddyScreen({ user, setUser, setLastResult, setScreen }) {
   return (
     <div style={{ minHeight:"100vh", background:C.bg }}>
       <UserHeader user={user} setScreen={setScreen} nav={[{id:"mission",label:"Quests"},{id:"path",label:"Skill Tree"},{id:"leaderboard",label:"🏆"}]} />
-      <div style={{ maxWidth:600, margin:"0 auto", padding:24 }}>
+      <BottomNav screen={screen} setScreen={setScreen} />
+      <div style={{ maxWidth:600, margin:"0 auto", padding:24, paddingBottom:90 }}>
         <div className="fade-up" style={{ marginBottom:24 }}>
           <h1 style={{ fontFamily:"'Fredoka One'", fontSize:30, color:C.text }}>🛡️ Find an Ally</h1>
           <p style={{ color:C.muted, fontSize:14 }}>These adventurers walk the same path</p>
@@ -1059,7 +1096,7 @@ const FAKE_LEADERS = {
 const RANK_COLORS = [C.gold, C.silver, C.bronze];
 const RANK_EMOJIS = ["👑","🌟","✦"];
 
-function LeaderboardScreen({ user, setScreen }) {
+function LeaderboardScreen({ user, setScreen, screen }) {
   const [tab, setTab] = useState(user.skill || "music");
 
   const leaders = FAKE_LEADERS[tab] || [];
@@ -1073,7 +1110,8 @@ function LeaderboardScreen({ user, setScreen }) {
   return (
     <div style={{ minHeight:"100vh", background:C.bg }}>
       <UserHeader user={user} setScreen={setScreen} nav={[{id:"mission",label:"Quests"},{id:"buddy",label:"Allies"},{id:"path",label:"Skill Tree"}]} />
-      <div style={{ maxWidth:600, margin:"0 auto", padding:24 }}>
+      <BottomNav screen={screen} setScreen={setScreen} />
+      <div style={{ maxWidth:600, margin:"0 auto", padding:24, paddingBottom:90 }}>
         <div className="fade-up" style={{ marginBottom:24 }}>
           <h1 style={{ fontFamily:"'Fredoka One'", fontSize:32, color:C.text }} className="arcane-title">🏆 Hall of Champions</h1>
           <p style={{ color:C.muted, fontSize:14 }}>The mightiest adventurers in the realm</p>
@@ -1176,7 +1214,7 @@ function getNextDays(n) {
 }
 
 // ─── SCREEN: MEETUP ────────────────────────────────────────────────────────────
-function MeetupScreen({ user, setScreen }) {
+function MeetupScreen({ user, setScreen, screen }) {
   const [tab, setTab] = useState("discover");
   const [selUser, setSelUser] = useState(null);
   const [selVenue, setSelVenue] = useState(null);
@@ -1372,7 +1410,8 @@ function MeetupScreen({ user, setScreen }) {
   return (
     <div style={{minHeight:"100vh",background:C.bg}}>
       <UserHeader user={user} setScreen={setScreen} nav={NAV}/>
-      <div style={{maxWidth:600,margin:"0 auto",padding:24}}>
+      <BottomNav screen={screen} setScreen={setScreen} />
+      <div style={{maxWidth:600,margin:"0 auto",padding:24,paddingBottom:90}}>
         <div className="fade-up" style={{marginBottom:20}}>
           <h1 style={{fontFamily:"'Fredoka One'",fontSize:30,color:C.text}}>🏰 Guild Meetups</h1>
           <p style={{color:C.muted,fontSize:14}}>Find allies near you in Dallas, TX · Train together in the realm</p>
@@ -1513,7 +1552,7 @@ function BrainAvatar({ trackColor, size=120, user }) {
 }
 
 // ─── SCREEN: INVENTORY ────────────────────────────────────────────────────────
-function InventoryScreen({ user, setScreen }) {
+function InventoryScreen({ user, setScreen, screen }) {
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -1542,7 +1581,8 @@ function InventoryScreen({ user, setScreen }) {
   return (
     <div style={{ minHeight:"100vh", background:C.bg }}>
       <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"← Home"},{id:"mission",label:"Quests"}]} />
-      <div style={{ maxWidth:600, margin:"0 auto", padding:20 }}>
+      <BottomNav screen={screen} setScreen={setScreen} />
+      <div style={{ maxWidth:600, margin:"0 auto", padding:20, paddingBottom:90 }}>
         <h1 className="fade-up" style={{ color:C.text, fontFamily:"'Fredoka One'", fontSize:28, marginBottom:20 }}>🎒 Vault of Relics</h1>
         <div style={{ display:"flex", gap:10, marginBottom:28 }}>
           <button onClick={()=>openCrate("bronze")} style={{ flex:1, padding:12, background:"#E8833A22", border:`1px solid #E8833A`, color:"#E8833A", borderRadius:12, cursor:"pointer", fontFamily:"'Fredoka One'", fontSize:14 }}>
@@ -1577,7 +1617,7 @@ function InventoryScreen({ user, setScreen }) {
 }
 
 // ─── SCREEN: MESSAGES (Sage AI Trainer) ──────────────────────────────────────
-function MessagesScreen({ user, setScreen }) {
+function MessagesScreen({ user, setScreen, screen }) {
   const [history, setHistory] = useState([
     { content: `Greetings, ${user.username}. I am Sage, your arcane trainer. How may I guide your ${user.skillName || user.skill} journey today?`, is_ai: true }
   ]);
@@ -1610,7 +1650,8 @@ function MessagesScreen({ user, setScreen }) {
 
   return (
     <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column" }}>
-      <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"← Home"},{id:"mission",label:"Quests"}]} />
+      <UserHeader user={user} setScreen={setScreen} nav={[]} />
+      <BottomNav screen={screen} setScreen={setScreen} />
       <div style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"10px 20px", display:"flex", alignItems:"center", gap:12 }}>
         <div style={{ width:36, height:36, borderRadius:"50%", background:`linear-gradient(135deg,${C.gold}88,${C.gold})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>🧙</div>
         <div>
@@ -1654,7 +1695,7 @@ function MessagesScreen({ user, setScreen }) {
 }
 
 // ─── SCREEN: CAMPAIGN ─────────────────────────────────────────────────────────
-function CampaignScreen({ user, setScreen }) {
+function CampaignScreen({ user, setScreen, screen }) {
   const [room, setRoom] = useState("");
   const [state, setState] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -1671,8 +1712,9 @@ function CampaignScreen({ user, setScreen }) {
 
   return (
     <div style={{ minHeight:"100vh", background:C.bg }}>
-      <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"← Home"},{id:"mission",label:"Quests"}]} />
-      <div style={{ maxWidth:520, margin:"0 auto", padding:24, textAlign:"center" }}>
+      <UserHeader user={user} setScreen={setScreen} nav={[]} />
+      <BottomNav screen={screen} setScreen={setScreen} />
+      <div style={{ maxWidth:520, margin:"0 auto", padding:24, paddingBottom:90, textAlign:"center" }}>
         <div style={{ fontSize:64, marginBottom:16, animation:"float 2s ease-in-out infinite" }}>🐲</div>
         <h1 style={{ color:C.text, fontFamily:"'Fredoka One'", fontSize:32, marginBottom:8 }}>Dungeon Raids</h1>
         <p style={{ color:C.muted, fontSize:14, marginBottom:32 }}>Battle monsters with 2-4 players. Answer correctly to deal damage.</p>
@@ -1709,12 +1751,13 @@ function CampaignScreen({ user, setScreen }) {
 }
 
 // ─── SCREEN: PROFILE ──────────────────────────────────────────────────────────
-function ProfileScreen({ user, setScreen }) {
+function ProfileScreen({ user, setScreen, screen }) {
   const skill = SKILLS.find(s => s.id === user.skill);
   return (
     <div style={{ minHeight:"100vh", background:C.bg }}>
-      <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"← Home"},{id:"inventory",label:"🎒 Vault"}]} />
-      <div style={{ maxWidth:480, margin:"0 auto", padding:24, textAlign:"center" }}>
+      <UserHeader user={user} setScreen={setScreen} nav={[]} />
+      <BottomNav screen={screen} setScreen={setScreen} />
+      <div style={{ maxWidth:480, margin:"0 auto", padding:24, paddingBottom:90, textAlign:"center" }}>
         <div className="fade-up" style={{ marginBottom:20 }}>
           <BrainAvatar trackColor={user.skill} size={140} user={user} />
         </div>
@@ -1748,7 +1791,7 @@ function ProfileScreen({ user, setScreen }) {
 }
 
 // ─── SCREEN: MAP ──────────────────────────────────────────────────────────────
-function MapScreen({ user, setScreen }) {
+function MapScreen({ user, setScreen, screen }) {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
   });
@@ -1766,7 +1809,8 @@ function MapScreen({ user, setScreen }) {
 
   return (
     <div style={{ minHeight:"100vh", background:C.bg, display:"flex", flexDirection:"column" }}>
-      <UserHeader user={user} setScreen={setScreen} nav={[{id:"home",label:"← Home"},{id:"meetup",label:"Meetups"}]} />
+      <UserHeader user={user} setScreen={setScreen} nav={[]} />
+      <BottomNav screen={screen} setScreen={setScreen} />
       <div style={{ padding:"12px 20px", background:C.surface, borderBottom:`1px solid ${C.border}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
         <div>
           <div style={{ fontFamily:"'Fredoka One'", fontSize:16, color:C.text }}>📍 Location Sharing</div>
@@ -1806,16 +1850,16 @@ export default function App() {
   function handleOnboard(u) { setUser(u); setScreen("path"); }
 
   if (screen === "home" || !user) return <OnboardingScreen onComplete={handleOnboard} />;
-  if (screen === "path")         return <LearningPathScreen user={user} setUser={setUser} setScreen={setScreen} />;
-  if (screen === "mission")      return <MissionScreen user={user} setUser={setUser} setScreen={setScreen} setLastResult={setLastResult} />;
-  if (screen === "results")      return <ResultsScreen user={user} lastResult={lastResult} setScreen={setScreen} />;
-  if (screen === "buddy")        return <BuddyScreen user={user} setUser={setUser} setLastResult={setLastResult} setScreen={setScreen} />;
-  if (screen === "leaderboard")  return <LeaderboardScreen user={user} setScreen={setScreen} />;
-  if (screen === "meetup")       return <MeetupScreen user={user} setScreen={setScreen} />;
-  if (screen === "inventory")    return <InventoryScreen user={user} setScreen={setScreen} />;
-  if (screen === "messages")     return <MessagesScreen user={user} setScreen={setScreen} />;
-  if (screen === "campaign")     return <CampaignScreen user={user} setScreen={setScreen} />;
-  if (screen === "profile")      return <ProfileScreen user={user} setScreen={setScreen} />;
-  if (screen === "map")          return <MapScreen user={user} setScreen={setScreen} />;
+  if (screen === "path")         return <LearningPathScreen user={user} setUser={setUser} setScreen={setScreen} screen={screen} />;
+  if (screen === "mission")      return <MissionScreen user={user} setUser={setUser} setScreen={setScreen} setLastResult={setLastResult} screen={screen} />;
+  if (screen === "results")      return <ResultsScreen user={user} lastResult={lastResult} setScreen={setScreen} screen={screen} />;
+  if (screen === "buddy")        return <BuddyScreen user={user} setUser={setUser} setLastResult={setLastResult} setScreen={setScreen} screen={screen} />;
+  if (screen === "leaderboard")  return <LeaderboardScreen user={user} setScreen={setScreen} screen={screen} />;
+  if (screen === "meetup")       return <MeetupScreen user={user} setScreen={setScreen} screen={screen} />;
+  if (screen === "inventory")    return <InventoryScreen user={user} setScreen={setScreen} screen={screen} />;
+  if (screen === "messages")     return <MessagesScreen user={user} setScreen={setScreen} screen={screen} />;
+  if (screen === "campaign")     return <CampaignScreen user={user} setScreen={setScreen} screen={screen} />;
+  if (screen === "profile")      return <ProfileScreen user={user} setScreen={setScreen} screen={screen} />;
+  if (screen === "map")          return <MapScreen user={user} setScreen={setScreen} screen={screen} />;
   return null;
 }
