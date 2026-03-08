@@ -29,11 +29,6 @@ from lootbox import roll_rarity, get_random_item
 
 app = FastAPI(title="NeuroLeague API")
 
-# Create tables
-Base.metadata.create_all(bind=engine)
-
-from fastapi.middleware.cors import CORSMiddleware
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -45,6 +40,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Create tables
+Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def read_root(): return {"status": "Arcane servers are online"}
