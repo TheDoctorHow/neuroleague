@@ -636,7 +636,7 @@ function OnboardingScreen({ onComplete }) {
           onFocus={e => e.target.style.borderColor = skill.color}
           onBlur={e => e.target.style.borderColor = C.border}
         />
-        <div style={{ fontSize:11, color:C.dim, textAlign:"right", marginBottom:20 }}>{advancedText.length}/200</div>
+        <div style={{ fontSize:11, color:C.dim, textAlign:"right", marginBottom:20 }}>{advancedText.length}{"/200"}</div>
         <button onClick={() => setPhase("ready")} style={{ width:"100%", padding:"16px", borderRadius:14, border:"none", background:`linear-gradient(135deg,${skill.color}CC,${skill.color})`, color:"#fff", fontFamily:"'Fredoka One'", fontSize:18, cursor:"pointer", boxShadow:`0 8px 24px ${skill.color}44` }}>
           {advancedText.trim() ? "The Oracle Accepts →" : "Enter the Realm →"}
         </button>
@@ -945,7 +945,7 @@ function ResultsScreen({ user, lastResult, setScreen, screen }) {
             }}>
               <div style={{ fontSize:11, fontWeight:700, color: p.won ? C.gold : C.muted, letterSpacing:1.5, marginBottom:8 }}>{p.won ? "👑 WINNER" : p.label}</div>
               <div style={{ fontFamily:"'Fredoka One'", fontSize:13, color:C.muted, marginBottom:4 }}>{p.username}</div>
-              <div style={{ fontFamily:"'Fredoka One'", fontSize:42, color: p.won ? C.gold : C.text, lineHeight:1 }}>{p.score}/{p.total}</div>
+              <div style={{ fontFamily:"'Fredoka One'", fontSize:42, color: p.won ? C.gold : C.text, lineHeight:1 }}>{p.score}{" / "}{p.total}</div>
               <div style={{ fontSize:13, color:C.green, marginTop:6, fontWeight:600 }}>+{p.xpGained} XP</div>
             </div>
           ))}
