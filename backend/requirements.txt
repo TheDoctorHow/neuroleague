@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy
+google-generativeai
+youtube-search-python
+googlemaps
+python-jose[cryptography]
+pydantic
+pydantic-settings
