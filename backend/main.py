@@ -31,12 +31,8 @@ app = FastAPI(title="NeuroLeague API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://neuroleague.vercel.app",
-        "http://localhost:3000",
-        "*"
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
