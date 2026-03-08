@@ -416,25 +416,37 @@ function OnboardingScreen({ onComplete }) {
   }
 
   async function handleLaunch() {
-    const trimmed = username.trim();
-    if (!trimmed) { setUsernameError("Pick a username to continue"); return; }
-    if (trimmed.length < 3) { setUsernameError("At least 3 characters"); return; }
-    setLoading(true);
+  const trimmed = username.trim();
+  if (!trimmed) { setUsernameError("Pick a username to continue"); return; }
+  if (trimmed.length < 3) { setUsernameError("At least 3 characters"); return; }
+  setLoading(true);
+  try {
+    const data = await apiFetch("/onboard", "POST", {
+      username: trimmed,
+      skill: skill.id,
+      level: computedLevel,
+      background: advancedText || (isAdvanced ? "Experienced learner" : "Just getting started!"),
+    });
     const user = {
-      id: Date.now(),
+      id: data.user_id,
       username: trimmed,
       skill: skill.id,
       skillName: skill.name,
       level: computedLevel,
-      background: advancedText || (isAdvanced ? "Experienced learner" : "Just getting started!"),
       xp: 0,
       streak: 1,
       gold: 50,
+      bronze_keys: data.bronze_keys || 1,
+      silver_keys: 0,
+      gold_keys: 0,
     };
-    await new Promise(r => setTimeout(r, 500));
     onComplete(user);
+  } catch(e) {
+    setUsernameError("Failed to create account. Try again.");
+  } finally {
     setLoading(false);
   }
+}
 
   const swipeStyle = swipeDir === "yes"
     ? { transform:"translateX(120%) rotate(15deg)", opacity:0, transition:"all 0.35s cubic-bezier(.4,0,.2,1)" }
