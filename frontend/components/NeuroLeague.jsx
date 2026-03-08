@@ -26,9 +26,9 @@ const C = {
 };
 
 const SKILLS = [
-  { id:"music",  name:"Sound Alchemy",   emoji:"🎵", tagline:"Weave beats, synthesis & sonic spells",   color:"#C084FC" },
-  { id:"crypto", name:"Rune Markets",    emoji:"📜", tagline:"Master DeFi, web3 & the arcane ledger",   color:"#3DFFA0" },
-  { id:"coding", name:"Spell Crafting",  emoji:"⚗️", tagline:"Forge algorithms, systems & dark APIs",  color:"#38D9FF" },
+  { id:"music",  name:"Music",   emoji:"🎵", tagline:"Weave beats, synthesis & sonic spells",   color:"#C084FC" },
+  { id:"crypto", name:"Cryptocurrency",    emoji:"💎", tagline:"Master DeFi, web3 & the arcane ledger",   color:"#3DFFA0" },
+  { id:"coding", name:"Coding",  emoji:"💻", tagline:"Forge algorithms, systems & dark APIs",  color:"#38D9FF" },
 ];
 
 const LEVEL_LABELS = ["", "Initiate", "Apprentice", "Adept", "Invoker", "Archmage"];
