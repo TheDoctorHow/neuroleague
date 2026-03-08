@@ -33,6 +33,14 @@ const SKILLS = [
 
 const LEVEL_LABELS = ["", "Initiate", "Apprentice", "Adept", "Invoker", "Archmage"];
 
+function scoresToLevel(yesCount) {
+  if (yesCount <= 1) return 1;
+  if (yesCount === 2) return 2;
+  if (yesCount === 3) return 3;
+  if (yesCount === 4) return 4;
+  return 5;
+}
+
 // ─── GLOBAL STYLES ────────────────────────────────────────────────────────────
 const globalStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Cinzel+Decorative:wght@700&family=DM+Sans:wght@400;500;600&display=swap');
