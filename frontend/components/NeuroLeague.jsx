@@ -428,7 +428,7 @@ function OnboardingScreen({ onComplete }) {
       background: advancedText || (isAdvanced ? "Experienced learner" : "Just getting started!"),
     });
     const user = {
-      id: data.user_id,
+      id: data.id,
       username: trimmed,
       skill: skill.id,
       skillName: skill.name,
