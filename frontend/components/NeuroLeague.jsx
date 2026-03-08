@@ -1,8 +1,5 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-// NOTE: Ensure your index.html / _document.tsx includes:
-// <meta name="viewport" content="width=device-width, initial-scale=1" />
-// Next.js adds this automatically. If standalone, add it manually.
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const C = {
@@ -75,22 +72,6 @@ const globalStyles = `
   .gold-glow { animation: goldGlow 2.5s ease-in-out infinite; }
   .arcane-title { font-family: 'Cinzel', serif; letter-spacing: 0.06em; }
   .card-reveal  { animation: cardReveal 0.45s cubic-bezier(.4,0,.2,1) both; }
-
-  /* ── MOBILE RESPONSIVE ── */
-  .mobile-show-emoji { display: none; }
-  @media (max-width: 480px) {
-    .mobile-hide-text { display: none !important; }
-    .mobile-show-emoji { display: inline !important; }
-    .mobile-col { flex-direction: column !important; }
-    .mobile-full { width: 100% !important; }
-    .mobile-sm-text { font-size: 11px !important; }
-    .mobile-grid-1 { grid-template-columns: 1fr !important; }
-    .mobile-wrap { flex-wrap: wrap !important; }
-    .mobile-pad { padding: 16px !important; }
-    .mobile-title { font-size: 26px !important; }
-    .mobile-hero { font-size: 32px !important; }
-    .mobile-card-title { font-size: 18px !important; }
-  }
 
   /* Arcane divider */
   .rune-divider {
@@ -209,8 +190,8 @@ function UserHeader({ user, nav, setScreen }) {
     <div style={{
       background: `linear-gradient(180deg, ${C.surface} 0%, ${C.bg}EE 100%)`,
       borderBottom: `1px solid ${C.border}`,
-      padding: "10px 14px",
-      display: "flex", alignItems: "center", gap: 8,
+      padding: "11px 18px",
+      display: "flex", alignItems: "center", gap: 10,
       position: "sticky", top: 0, zIndex: 10,
       backdropFilter: "blur(18px)",
       boxShadow: `0 1px 0 ${C.border}, 0 4px 24px rgba(0,0,0,0.4)`,
@@ -232,7 +213,7 @@ function UserHeader({ user, nav, setScreen }) {
       {/* Stats */}
       <div style={{ display:"flex", gap:10, alignItems:"center", flexShrink:0 }}>
         <div style={{ display:"flex", gap:3, alignItems:"center" }}>
-          <span style={{ fontSize:13 }}>🔥</span><span style={{ color:C.text, fontWeight:700, fontSize:13 }}>{user.streak}</span>
+          <span style={{ fontSize:13 }}>🔥</span><span style={{ color:C.text, fontWeight:700, fontSize:12 }}>{user.streak}</span>
         </div>
         <div style={{ display:"flex", gap:3, alignItems:"center" }}>
           <span style={{ fontSize:13 }}>🪙</span><span style={{ color:C.gold, fontWeight:700, fontSize:12 }}>{user.gold||0}</span>
@@ -242,12 +223,9 @@ function UserHeader({ user, nav, setScreen }) {
       <div style={{ display:"flex", gap:1, paddingLeft:6, borderLeft:`1px solid ${C.border}` }}>
         {nav.map(({id, label}) => (
           <button key={id} onClick={() => setScreen(id)}
-            style={{ background:"transparent", border:"none", color:C.muted, cursor:"pointer", fontSize:10, padding:"4px 6px", borderRadius:6, transition:"all 0.2s", whiteSpace:"nowrap" }}
+            style={{ background:"transparent", border:"none", color:C.muted, cursor:"pointer", fontSize:10, padding:"4px 7px", borderRadius:6, transition:"all 0.2s", whiteSpace:"nowrap" }}
             onMouseEnter={e=>e.target.style.color=C.purple} onMouseLeave={e=>e.target.style.color=C.muted}>
-            <span className="mobile-hide-text">{label}</span>
-            <span style={{display:"none"}} className="mobile-show-emoji">
-              {label.startsWith("🏆") || label.startsWith("⚔") || label.startsWith("🛡") ? label.split(" ")[0] : label.charAt(0)}
-            </span>
+            {label}
           </button>
         ))}
       </div>
@@ -502,8 +480,8 @@ function OnboardingScreen({ onComplete }) {
         <div key={i} style={{ position:"absolute", left:`${15+i*18}%`, top:`${20+i*12}%`, fontSize:i%2===0?18:12, color:C.purple, opacity:0.15, animation:`runeFloat ${5+i}s ${i*0.8}s ease-in-out infinite`, pointerEvents:"none" }}>{r}</div>
       ))}
       <div className="fade-up" style={{ textAlign:"center", maxWidth:400, position:"relative", zIndex:1 }}>
-        <div style={{ fontFamily:"'Fredoka One'", fontSize:72, color:C.purple, lineHeight:1, animation:"float 3s ease-in-out infinite", marginBottom:12 }}>⚡</div>
-        <h1 className="arcane-title mobile-hero" style={{ fontFamily:"'Cinzel', serif", fontSize:40, color:C.text, marginBottom:8, letterSpacing:"0.06em" }}>NeuroLeague</h1>
+        <div style={{ fontFamily:"'Fredoka One'", fontSize:72, color:C.purple, lineHeight:1, animation:"float 3s ease-in-out infinite", marginBottom:12 }}>🧠</div>
+        <h1 className="arcane-title" style={{ fontFamily:"'Cinzel', serif", fontSize:40, color:C.text, marginBottom:8, letterSpacing:"0.06em" }}>NeuroLeague</h1>
         <p style={{ color:C.muted, fontSize:16, lineHeight:1.6, marginBottom:32 }}>
           Level up your skills.<br/>Beat your rivals.<br/>Become a Sage.
         </p>
@@ -532,7 +510,7 @@ function OnboardingScreen({ onComplete }) {
               onMouseEnter={e=>{e.currentTarget.style.borderColor=s.color;e.currentTarget.style.background=`${s.color}18`;e.currentTarget.style.transform="scale(1.02)";}}
               onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.background=C.card;e.currentTarget.style.transform="scale(1)";}}>
               <div style={{ fontSize:40, lineHeight:1, flexShrink:0 }}>{s.emoji}</div>
-              <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ flex:1 }}>
                 <div style={{ fontFamily:"'Fredoka One'", fontSize:22, color:C.text, marginBottom:4 }}>{s.name}</div>
                 <div style={{ fontSize:13, color:C.muted }}>{s.tagline}</div>
               </div>
@@ -754,7 +732,7 @@ function LearningPathScreen({ user, setUser, setScreen }) {
                 onMouseEnter={e => { e.currentTarget.style.background = C.cardHover; e.currentTarget.style.transform="translateX(4px)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = C.card; e.currentTarget.style.transform="translateX(0)"; }}>
                 <div style={{ width:32, height:32, borderRadius:"50%", background:`${skill?.color || C.purple}22`, border:`2px solid ${skill?.color || C.purple}`, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Fredoka One'", fontSize:15, color:skill?.color || C.purple, flexShrink:0 }}>{i+1}</div>
-                <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ flex:1 }}>
                   <div style={{ fontWeight:600, color:C.text, marginBottom:4, fontSize:15 }}>{step.step}</div>
                   <div style={{ color:C.muted, fontSize:13, marginBottom:10 }}>{step.reason}</div>
                   <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(step.youtube_query)}`} target="_blank" rel="noreferrer" style={{ display:"inline-flex", alignItems:"center", gap:5, background:"#FF000022", border:"1px solid #FF000044", color:"#FF6B6B", borderRadius:8, padding:"4px 10px", fontSize:12, textDecoration:"none", fontWeight:600, transition:"all 0.2s" }}
@@ -846,7 +824,7 @@ function MissionScreen({ user, setUser, setScreen, setLastResult }) {
               <p style={{ fontWeight:600, fontSize:15, marginBottom:14, color:C.text }}>
                 <span style={{ color:C.purple, fontFamily:"'Fredoka One'" }}>Q{qi+1}.</span> {q.question}
               </p>
-              <div className="mobile-grid-1" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
                 {q.options.map((opt, oi) => {
                   const selected = answers[qi] === oi;
                   return (
@@ -922,7 +900,7 @@ function ResultsScreen({ user, lastResult, setScreen }) {
         </div>
 
         {/* Score cards */}
-        <div className="fade-up-1 mobile-grid-1" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:20 }}>
+        <div className="fade-up-1" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:20 }}>
           {[
             { ...creator, label:"YOU", isYou:true, won:creatorWon },
             { ...challenger, label:"OPPONENT", isYou:false, won:!creatorWon },
@@ -973,7 +951,7 @@ function ResultsScreen({ user, lastResult, setScreen }) {
         <div className="fade-up-4" style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:14, padding:16, marginBottom:20 }}>
           <h3 style={{ fontFamily:"'Fredoka One'", fontSize:18, marginBottom:4 }}>🔗 Challenge a Rival</h3>
           <p style={{ color:C.muted, fontSize:13, marginBottom:12 }}>Dispatch this trial scroll — face a rival and compare your power</p>
-          <div className="mobile-col" style={{ display:"flex", gap:8 }}>
+          <div style={{ display:"flex", gap:8 }}>
             <input readOnly value={shareUrl} style={{ flex:1, background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, padding:"8px 12px", color:C.muted, fontSize:12, fontFamily:"monospace", outline:"none" }} />
             <button onClick={handleCopy} style={{ background: copied ? C.green : C.purple, border:"none", borderRadius:8, padding:"8px 16px", color:"#fff", cursor:"pointer", fontWeight:600, fontSize:13, transition:"all 0.2s", whiteSpace:"nowrap" }}>
               {copied ? "Copied! ✓" : "Copy Link"}
@@ -981,7 +959,7 @@ function ResultsScreen({ user, lastResult, setScreen }) {
           </div>
         </div>
 
-        <div className="fade-up-5 mobile-grid-1" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+        <div className="fade-up-5" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
           <button onClick={() => setScreen("mission")} style={{ padding:"14px", borderRadius:12, border:`2px solid ${C.border}`, background:"transparent", color:C.text, cursor:"pointer", fontFamily:"'Fredoka One'", fontSize:16, transition:"all 0.2s" }}
             onMouseEnter={e=>{e.currentTarget.style.borderColor=C.purple;e.currentTarget.style.color=C.purple;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.text;}}>
             Next Quest ⚡
@@ -1034,7 +1012,7 @@ function BuddyScreen({ user, setUser, setLastResult, setScreen }) {
           {FAKE_BUDDIES.map((buddy, i) => (
             <div key={buddy.id} className={`fade-up-${i+1}`} style={{ background:`linear-gradient(160deg,${C.cardHover} 0%,${C.card} 100%)`, border:`1px solid ${C.border}`, borderRadius:16, padding:16, display:"flex", alignItems:"center", gap:14 }}>
               <Avatar name={buddy.username} skill={buddy.skill} size={46} />
-              <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ flex:1 }}>
                 <div style={{ fontWeight:700, fontSize:15, color:C.text, marginBottom:4 }}>{buddy.username}</div>
                 <div style={{ display:"flex", gap:6, alignItems:"center" }}>
                   <Badge text={`${buddy.skillName} • Lvl ${buddy.level}`} color={skillColor[buddy.skill]} />
@@ -1104,7 +1082,7 @@ function LeaderboardScreen({ user, setScreen }) {
           <p style={{ color:C.muted, fontSize:14 }}>The mightiest adventurers in the realm</p>
         </div>
 
-        <div className="fade-up-1 mobile-wrap" style={{ display:"flex", gap:8, marginBottom:24 }}>
+        <div className="fade-up-1" style={{ display:"flex", gap:8, marginBottom:24 }}>
           {SKILLS.map(s => (
             <button key={s.id} onClick={() => setTab(s.id)} style={{
               padding:"8px 14px", borderRadius:10, border:`2px solid ${tab===s.id ? s.color : C.border}`,
@@ -1129,7 +1107,7 @@ function LeaderboardScreen({ user, setScreen }) {
                   {i < 3 ? RANK_EMOJIS[i] : <span style={{ fontSize:14, color:C.dim }}>{i+1}</span>}
                 </div>
                 <Avatar name={player.username} skill={tab} size={36} />
-                <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ flex:1 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                     <span style={{ fontWeight:600, fontSize:14, color: isUser ? C.purple : C.text }}>{player.username}</span>
                     {isUser && <Badge text="YOU" color={C.purple} />}{i===0 && !isUser && <Badge text="⚗️ Sage" color={C.gold} />}
@@ -1489,7 +1467,7 @@ function MeetupScreen({ user, setScreen }) {
                   </div>
                   <div style={{background:`${C.green}22`,border:`1px solid ${C.green}44`,borderRadius:99,padding:"3px 10px",fontSize:11,color:C.green,fontWeight:700,flexShrink:0}}>SWORN</div>
                 </div>
-                <div className="mobile-grid-1" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
                   {[["👤 With",m.with],["🎯 Topic",m.interest],["📅 Date",m.day],["⏰ Time",m.time]].map(([k,v])=>(
                     <div key={k} style={{background:C.surface,borderRadius:10,padding:"8px 12px"}}>
                       <div style={{fontSize:11,color:C.muted,marginBottom:2}}>{k}</div>
