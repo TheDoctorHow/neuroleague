@@ -397,45 +397,6 @@ function SwipeCard({ question, skillColor, onYes, onNo, cardIndex, totalCards })
   );
 }
 
-
-// ─── BRAIN AVATAR COMPONENT ──────────────────────────────────────────────────
-function BrainAvatar({ trackColor, size=120, user }) {
-  const colors = { music:"#A855F7", crypto:"#22C55E", coding:"#06B6D4" };
-  const baseColor = colors[trackColor] || trackColor || C.purple;
-  const isLegendaryEffect = user?.avatar?.equipped_effect;
-  const isRareAura = user?.avatar?.equipped_aura;
-  
-  return (
-    <div className={isLegendaryEffect ? "glow-anim" : ""} style={{ position:"relative", width:size, height:size, display:"flex", alignItems:"center", justifyContent:"center" }}>
-      {/* 1. Aura layer */}
-      {isRareAura && <div style={{ position:"absolute", inset:-size*0.2, borderRadius:"50%", background:`radial-gradient(circle, ${C.gold}44 0%, transparent 60%)`, animation:"orbPulse 3s infinite" }} />}
-      
-      {/* 2. Base brain layer */}
-      <div style={{ width:size*0.8, height:size*0.7, borderRadius:"45% 45% 40% 40%", background:`linear-gradient(135deg, ${baseColor} 0%, ${C.bg} 100%)`, position:"relative", overflow:"hidden", border:`2px solid ${baseColor}88`, boxShadow:`inset 0 -${size*0.1}px 0 rgba(0,0,0,0.3)` }}>
-         {/* Brain folds (css shapes) */}
-         <div style={{ position:"absolute", top:"20%", left:"10%", width:"80%", height:"2px", background:"rgba(0,0,0,0.3)", borderRadius:"50%", transform:"rotate(5deg)" }} />
-         <div style={{ position:"absolute", top:"50%", left:"15%", width:"70%", height:"2px", background:"rgba(0,0,0,0.3)", borderRadius:"50%", transform:"rotate(-5deg)" }} />
-      </div>
-      
-      {/* 3. Face layer */}
-      <div style={{ position:"absolute", top:"40%", display:"flex", gap:size*0.1 }}>
-         <div style={{ width:size*0.1, height:size*0.15, background:"#000", borderRadius:"50%" }} />
-         <div style={{ width:size*0.1, height:size*0.15, background:"#000", borderRadius:"50%" }} />
-      </div>
-      
-      {/* 4. Hat layer */}
-      {user?.avatar?.equipped_hat && (
-         <div style={{ position:"absolute", top:-(size*0.1), fontSize:size*0.4 }}>🎩</div>
-      )}
-      
-      {/* 5. Accessory layer */}
-      {user?.avatar?.equipped_accessory && (
-         <div style={{ position:"absolute", top:size*0.3, right:0, fontSize:size*0.3 }}>✨</div>
-      )}
-    </div>
-  );
-}
-
 // ─── SCREEN: ONBOARDING ───────────────────────────────────────────────────────
 function OnboardingScreen({ onComplete }) {
   const [phase, setPhase] = useState("splash");    // splash | skill | swipe | advanced | ready
